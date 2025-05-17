@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { ScrapingService } from './services/scraping';
 import { ScrapingRequest } from './types';
@@ -11,7 +11,7 @@ app.use(express.json());
 
 const scrapingService = new ScrapingService();
 
-app.post('/api/scrape', async (req, res) => {
+app.post('/api/scrape', async (req: Request, res: Response) => {
     try {
         const { searchTerm, sources }: ScrapingRequest = req.body;
 
@@ -33,15 +33,15 @@ app.post('/api/scrape', async (req, res) => {
     }
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'healthy' });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
     res.json({ status: 'healthy' });
 });
 
-app.get('/api/search', async (req, res) => {
+app.get('/api/search', async (req: Request, res: Response) => {
     try {
         const searchTerm = req.query.q as string;
         if (!searchTerm) {
