@@ -41,11 +41,12 @@ app.use(express.json());
 
 const scrapingService = new ScrapingService();
 
-// Root route handler
+// Root route handler - Updated to be more resilient
 app.get('/', (_req: Request, res: Response) => {
     res.json({
         name: "Compare-It API",
         version: "1.0.0",
+        status: "online",
         endpoints: [
             { path: "/api/health", method: "GET", description: "Health check endpoint" },
             { path: "/api/scrape", method: "POST", description: "Product scraping endpoint" },
@@ -114,6 +115,20 @@ app.get('/api/search', async (req: Request, res: Response) => {
         console.error('Search error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
+});
+
+// Add a catch-all route at the end
+app.use('*', (req: Request, res: Response) => {
+    res.json({
+        message: "Welcome to Compare-It API",
+        requested_path: req.originalUrl,
+        available_endpoints: [
+            "/",
+            "/api/health",
+            "/api/scrape",
+            "/api/search"
+        ]
+    });
 });
 
 app.listen(port, () => {

@@ -1,5 +1,6 @@
 import { Product, PriceInfo, ScrapedProduct } from '../types/Product';
 import debounce from 'lodash/debounce';
+import config from '../config';
 
 interface SearchError extends Error {
     code?: string;
@@ -8,14 +9,16 @@ interface SearchError extends Error {
 
 class ScrapingService {
     private static instance: ScrapingService;
-    private baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://compare-it-backend.onrender.com'  // Replace with your Firebase project ID
-        : 'http://localhost:3001';  // Local development
+    private baseUrl: string;
     private pendingRequests: Map<string, Promise<Product[]>> = new Map();
     private cache: Map<string, { data: Product[], timestamp: number }> = new Map();
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
     private constructor() {
+        // Use the same config as the main API service
+        this.baseUrl = config.apiUrl;
+        console.log('Scraping Service initialized with URL:', this.baseUrl);
+
         // Clear expired cache entries periodically
         setInterval(() => this.cleanCache(), this.CACHE_DURATION);
     }
