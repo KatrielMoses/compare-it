@@ -1,6 +1,6 @@
 const config = {
-    // Use environment variable if available, otherwise use local development URL
-    apiUrl: process.env.REACT_APP_API_URL || 'http://localhost:3000'
+    apiUrl: import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? 'http://localhost:3001' : 'https://compare-it-backend.onrender.com')
 };
 
 export default config; 

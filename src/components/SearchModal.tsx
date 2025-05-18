@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '../types/Product';
 import ProductCard from './ProductCard';
 import { ApiService } from '../services/api';
+import config from '../config';
 
 interface SearchModalProps {
     isOpen: boolean;
@@ -13,6 +14,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     const [searchResults, setSearchResults] = useState<Product[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        console.log('API URL from config:', config.apiUrl);
+    }, []);
+
     const apiService = ApiService.getInstance();
 
     const handleSearch = async (e: React.FormEvent) => {

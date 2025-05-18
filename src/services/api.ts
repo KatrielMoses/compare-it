@@ -27,12 +27,17 @@ export class ApiService {
         sources?: ('zepto' | 'blinkit' | 'swiggymart')[]
     ): Promise<SearchResponse> {
         try {
-            const queryParams = new URLSearchParams({ q: searchTerm });
-            if (sources) {
-                sources.forEach(source => queryParams.append('sources', source));
-            }
+            const response = await fetch(`${this.baseUrl}/api/scrape`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    searchTerm,
+                    sources
+                })
+            });
 
-            const response = await fetch(`${this.baseUrl}/api/search?${queryParams}`);
             const data = await response.json();
 
             if (!response.ok) {

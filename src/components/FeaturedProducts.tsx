@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import ProductCard from './ProductCard';
 import { popularProducts } from '../services/mockData';
+import { ApiService } from '../services/api';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
@@ -13,41 +14,15 @@ const FeaturedProducts: React.FC = () => {
     const fetchPopularProducts = async () => {
         try {
             setIsLoading(true);
-            // Fetch from multiple sources (example with Amazon)
-            const response = await fetch('https://api.rainforestapi.com/request', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // Add your API parameters here
-                // This is an example structure - you'll need to add your actual API key and parameters
-            });
+            const apiService = ApiService.getInstance();
+            const response = await apiService.searchProducts('popular products', ['zepto', 'blinkit', 'swiggymart']);
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch products');
+            if (!response.success || !response.products?.length) {
+                console.log('Using mock data as fallback');
+                return popularProducts;
             }
 
-            const data = await response.json();
-            // Transform the API response to match our Product type
-            // This is a placeholder transformation - adjust according to actual API response
-            const transformedProducts = data.bestsellers.map((item: any) => ({
-                id: item.asin,
-                name: item.title,
-                image: item.image,
-                weight: item.weight || 'N/A',
-                category: item.category || 'General',
-                prices: [
-                    {
-                        platform: 'Amazon',
-                        price: parseFloat(item.price.replace(/[^0-9.]/g, '')),
-                        inStock: item.in_stock,
-                        deliveryTime: item.delivery_time || '2-3 days'
-                    }
-                ]
-            }));
-
-            // For now, use mock data as fallback
-            return transformedProducts.length > 0 ? transformedProducts : popularProducts;
+            return response.products;
         } catch (error) {
             console.error('Error fetching products:', error);
             // Fallback to mock data if API fails
@@ -69,21 +44,27 @@ const FeaturedProducts: React.FC = () => {
     useEffect(() => {
         const updateFeaturedProducts = async () => {
             setIsLoading(true);
-            const products = await fetchPopularProducts();
-            const shuffled = shuffleArray(products);
-            // Ensure we always have exactly 20 products
-            const selected = shuffled.slice(0, 20);
-            if (selected.length < 20) {
-                // If we have less than 20 products, repeat some to reach 20
-                const repeated = [...selected];
-                while (repeated.length < 20) {
-                    repeated.push(...selected.slice(0, 20 - repeated.length));
+            try {
+                const products = await fetchPopularProducts();
+                const shuffled = shuffleArray(products);
+                // Ensure we always have exactly 20 products
+                const selected = shuffled.slice(0, 20);
+                if (selected.length < 20) {
+                    // If we have less than 20 products, repeat some to reach 20
+                    const repeated = [...selected];
+                    while (repeated.length < 20) {
+                        repeated.push(...selected.slice(0, 20 - repeated.length));
+                    }
+                    setFeaturedProducts(repeated);
+                } else {
+                    setFeaturedProducts(selected);
                 }
-                setFeaturedProducts(repeated);
-            } else {
-                setFeaturedProducts(selected);
+            } catch (error) {
+                console.error('Error updating featured products:', error);
+                setFeaturedProducts(popularProducts);
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
 
         // Initial update

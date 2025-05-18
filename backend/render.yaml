@@ -7,6 +7,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-    healthCheckPath: /health
+      - key: PORT
+        value: 3001
+    healthCheckPath: /api/health
     plan: free
     region: singapore  # You can change this to your preferred region 

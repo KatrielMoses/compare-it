@@ -13,6 +13,7 @@ export class ScrapingService {
         const browser = await this.initBrowser();
         try {
             const page = await browser.newPage();
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
             await page.goto(`https://www.zeptonow.com/search?q=${encodeURIComponent(searchTerm)}`);
             await page.waitForSelector('.product-card', { timeout: 5000 }).catch(() => null);
 
@@ -21,7 +22,7 @@ export class ScrapingService {
                 return Array.from(items, item => {
                     const name = item.querySelector('.product-title')?.textContent || '';
                     const priceText = item.querySelector('.product-price')?.textContent || '0';
-                    const price = parseFloat(priceText.replace('₹', '').trim());
+                    const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
                     const image = item.querySelector('img')?.src || '';
                     const link = item.querySelector('a')?.href || '';
 
@@ -36,7 +37,7 @@ export class ScrapingService {
                 });
             });
 
-            return products;
+            return products.filter(p => p.name && p.price > 0);
         } catch (error) {
             console.error('Error scraping Zepto:', error);
             return [];
@@ -49,6 +50,7 @@ export class ScrapingService {
         const browser = await this.initBrowser();
         try {
             const page = await browser.newPage();
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
             await page.goto(`https://www.swiggy.com/instamart-search?query=${encodeURIComponent(searchTerm)}`);
             await page.waitForSelector('[data-testid="product-card"]', { timeout: 5000 }).catch(() => null);
 
@@ -57,7 +59,7 @@ export class ScrapingService {
                 return Array.from(items, item => {
                     const name = item.querySelector('.product-name')?.textContent || '';
                     const priceText = item.querySelector('.price')?.textContent || '0';
-                    const price = parseFloat(priceText.replace('₹', '').trim());
+                    const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
                     const image = item.querySelector('img')?.src || '';
                     const link = item.closest('a')?.href || '';
 
@@ -72,7 +74,7 @@ export class ScrapingService {
                 });
             });
 
-            return products;
+            return products.filter(p => p.name && p.price > 0);
         } catch (error) {
             console.error('Error scraping SwiggyMart:', error);
             return [];
@@ -85,6 +87,7 @@ export class ScrapingService {
         const browser = await this.initBrowser();
         try {
             const page = await browser.newPage();
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
             await page.goto(`https://blinkit.com/search?q=${encodeURIComponent(searchTerm)}`);
             await page.waitForSelector('.product', { timeout: 5000 }).catch(() => null);
 
@@ -93,7 +96,7 @@ export class ScrapingService {
                 return Array.from(items, item => {
                     const name = item.querySelector('.product-name')?.textContent || '';
                     const priceText = item.querySelector('.price')?.textContent || '0';
-                    const price = parseFloat(priceText.replace('₹', '').trim());
+                    const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
                     const image = item.querySelector('img')?.src || '';
                     const link = item.querySelector('a')?.href || '';
 
@@ -108,7 +111,7 @@ export class ScrapingService {
                 });
             });
 
-            return products;
+            return products.filter(p => p.name && p.price > 0);
         } catch (error) {
             console.error('Error scraping Blinkit:', error);
             return [];

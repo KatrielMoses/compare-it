@@ -9,8 +9,8 @@ interface SearchError extends Error {
 class ScrapingService {
     private static instance: ScrapingService;
     private baseUrl = process.env.NODE_ENV === 'production'
-        ? 'https://compare-it-007.web.app/api'  // Replace with your Firebase project ID
-        : 'http://localhost:5001/compare-it-007/us-central1/api';  // Local development
+        ? 'https://compare-it-backend.onrender.com'  // Replace with your Firebase project ID
+        : 'http://localhost:3001';  // Local development
     private pendingRequests: Map<string, Promise<Product[]>> = new Map();
     private cache: Map<string, { data: Product[], timestamp: number }> = new Map();
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -75,19 +75,25 @@ class ScrapingService {
         async (query: string): Promise<Product[]> => {
             try {
                 const response = await this.fetchWithTimeout(
-                    `${this.baseUrl}/search?query=${encodeURIComponent(query)}`
+                    `${this.baseUrl}/api/scrape`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            searchTerm: query,
+                            sources: ['zepto', 'blinkit', 'swiggymart']
+                        })
+                    }
                 );
 
-                const scrapedProducts: ScrapedProduct[] = await response.json();
-                const products = this.transformScrapedProducts(scrapedProducts);
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to fetch products');
+                }
 
-                // Cache the results
-                this.cache.set(query, {
-                    data: products,
-                    timestamp: Date.now()
-                });
-
-                return products;
+                return result.products;
             } catch (error) {
                 console.error('Error searching products:', error);
                 throw this.handleError(error);
